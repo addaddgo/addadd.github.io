@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.9.0">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Description-->
+
+    
+
+    
+        <meta name="description" content="磁盘讨论磁盘的硬件结构，及其逻辑控制。如调度策略，数据放置。因为时间原因，只进行大概的了解。
+磁盘储存设备磁盘是表面涂有磁性物质的金属或者塑料构成的圆形磁盘。上面记录着数据，数据可以通过一个叫做磁头的导体线圈读出和写入。
+
+读操作：当圆盘转动的时候，圆盘上的磁性物质相对于磁头移动，在磁头的导线中产生">
+    
+
+    <!--Author-->
+    
+        <meta name="author" content="John Doe">
+    
+
+    <!--Open Graph Title-->
+    
+        <meta property="og:title" content="磁盘">
+    
+
+    <!--Open Graph Description-->
+    
+        <meta property="og:description" content="磁盘讨论磁盘的硬件结构，及其逻辑控制。如调度策略，数据放置。因为时间原因，只进行大概的了解。
+磁盘储存设备磁盘是表面涂有磁性物质的金属或者塑料构成的圆形磁盘。上面记录着数据，数据可以通过一个叫做磁头的导体线圈读出和写入。
+
+读操作：当圆盘转动的时候，圆盘上的磁性物质相对于磁头移动，在磁头的导线中产生">
+    
+
+    <!--Open Graph Site Name-->
+        <meta property="og:site_name" content="Hexo">
+
+    <!--Type page-->
+    
+        <meta property="og:type" content="article">
+    
+
+    <!--Page Cover-->
+    
+    
+        <meta property="og:image" content="http://yoursite.comhttp://www.codeblocq.com/assets/projects/hexo-theme-clean-blog/img/home-bg.jpg">
+    
+
+        <meta name="twitter:card" content="summary_large_image">
+
+    
+
+    
+        <meta name="twitter:image" content="http://yoursite.comhttp://www.codeblocq.com/assets/projects/hexo-theme-clean-blog/img/home-bg.jpg">
+    
+
+    <!-- Title -->
+    
+    <title>磁盘 - Hexo</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Gallery -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.css" type="text/css" rel="stylesheet">
+
+    <!-- Google Analytics -->
+    
+
+
+    <!-- favicon -->
+    
+
+</head>
+
+
+<body>
+
+    <!-- Menu -->
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Configurable Title</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <a href="/">
+                            
+                                Home
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/archives">
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/tags">
+                            
+                                Tags
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/笔记">
+                            
+                                Categories
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/klugjo/hexo-theme-clean-blog">
+                            
+                                <i class="fa fa-github fa-stack-2x"></i>
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+    <!-- Main Content -->
+    <!-- Page Header -->
+<!-- Set your background image for this header in your post front-matter: cover -->
+
+<header class="intro-header" style="background-image: url('http://www.codeblocq.com/assets/projects/hexo-theme-clean-blog/img/home-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <h1>磁盘</h1>
+                    
+                    <span class="meta">
+                        <!-- Date and Author -->
+                        
+                        
+                            2019-10-22
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Tags and categories -->
+           
+
+            <!-- Gallery -->
+            
+
+            <!-- Post Main Content -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <h1 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h1><p>讨论磁盘的硬件结构，及其逻辑控制。如调度策略，数据放置。因为时间原因，只进行大概的了解。</p>
+<h2 id="磁盘储存设备"><a href="#磁盘储存设备" class="headerlink" title="磁盘储存设备"></a>磁盘储存设备</h2><p>磁盘是表面涂有磁性物质的金属或者塑料构成的圆形磁盘。上面记录着数据，数据可以通过一个叫做<b>磁头</b>的导体线圈读出和写入。</p>
+<ol>
+<li>读操作：当圆盘转动的时候，圆盘上的磁性物质相对于磁头移动，在磁头的导线中产生之前记录的同极性的电流。利用正负电流，就可以判断出读出的比特是零还是一了。</li>
+<li>写操作：当磁头导线通过电流，产生磁场。电脉冲送到磁头，改变磁头下磁盘中的磁模式。</li>
+</ol>
+<p>简单来说，磁盘提供读写的方式大概就是。磁盘不断旋转，并利用磁头进行读写。磁盘上存在很多的数据，每一个比特都在磁盘上对应一个<b>数据位</b>。现在的问题是，如何正确地读写相应的数据块？先来了解一下磁盘的结构。</p>
+<h3 id="磁盘的结构"><a href="#磁盘的结构" class="headerlink" title="磁盘的结构"></a>磁盘的结构</h3><p>磁头是一个很小的设备。磁头同一时间都只能读取一次的数据，而磁盘又必须得旋转，这样的话磁盘上的数据就组织在同一组同心圆上了。每一个同心圆我们将之称为<b>磁道</b>。为了让磁头对准磁道还有减小磁场之间的干扰，我们需要在相邻的磁道设置间隙。一个磁道上的数据密度可能会很高，100万的比特数量都是算低了。磁盘在高速旋转的时候，为了判断正确的地址，所以将磁道上的数据分割成一个个扇区，并在扇区之间设置间隔。（类似阅兵的标兵）。</p>
+<h4 id="磁盘上的数据分布"><a href="#磁盘上的数据分布" class="headerlink" title="磁盘上的数据分布"></a>磁盘上的数据分布</h4><p>离圆心位置越远的磁道，其周长越长，在相同的数据密度的情况下，可以储存的数据也就越多。在磁盘的设计中，我们希望随机读取连续的数据（同一磁道上）在不同磁道具有相同的读取速度。对于这一点我们可以通过控制磁盘转速和数据分布情况来做到。</p>
+<ol>
+<li>恒定角速度：在角速度恒定的状态下，外磁道的转速会更快。为了做到上述的要求，要求任何一个磁道的比特数一致。在每个扇区比特数一致的情况下，这个方法可以很好地通过磁道和扇区快速找到数据位。但是这样会浪费磁盘上的数据容量。</li>
+<li>分区记录：这个方法是现代系统比较常用的方法。将连续的几个磁道划分成一个区，同一个区的数据访问采用相同的角速度（区内磁道比特数一致），不同的分区间使用不同的角速度。这就可以让外磁道的数据量增大，不过这也意味着更加复杂的磁盘旋转控制。</li>
+</ol>
+<p>下图：</p>
+<p>磁盘上的一些数据位是提供给磁盘驱动器访问的，用户不能访问。</p>
+<h4 id="类别"><a href="#类别" class="headerlink" title="类别"></a>类别</h4><p>磁头：</p>
+<ol>
+<li>可移动磁头：磁头臂可以任意伸缩，定位到磁道上。</li>
+<li>固定磁头：每一个磁道在磁头臂上都有一个磁头。<br>磁头是否接触盘面：</li>
+<li>磁头距离盘面固定的距离。</li>
+<li>磁头接触盘面。</li>
+<li>空气动力磁头：当磁道越窄，为了正确的读写，磁头距离磁道也更近。这样可以提高数据密度，但是磁头越近，产生错误的危险也就越容易。盘片不可能做成绝对的平滑，传统的刚性固定距离磁头不能距离盘片太近（太近可能碰到）。这个方法，将磁头设计成一个空气动力薄膜，当磁盘旋转的时候，产生气压，将磁头抬升到一个合适的高度。磁盘没有旋转的时候，磁头接触磁盘。<br>磁盘：</li>
+<li>可换式磁盘：可以在在不同计算机上移动。</li>
+<li>固定磁盘：永久安装在磁盘驱动器上。</li>
+<li>单面磁盘：盘片的一面涂有磁性物质。</li>
+<li>双面磁盘：盘片的双面都有磁性物质，两面都有磁头。</li>
+<li>多盘片: 一些磁盘驱动器允许多个盘面堆叠起来。如果使用的是移动磁头，每个盘片都有一个或两个磁头。这些磁头在同一时间，磁头臂伸出的距离都是同样的。不同盘片上，距离圆心相同位置的磁道称为柱面。</li>
+</ol>
+<h2 id="磁盘调度策略"><a href="#磁盘调度策略" class="headerlink" title="磁盘调度策略"></a>磁盘调度策略</h2><p>磁盘的访问速度，远比内存和处理器速度慢得多。为了读取一个特定的数据，磁头需要定位到对应的磁道和扇区上。这一定的时间：</p>
+<ol>
+<li>寻道时间：磁头定位到特定磁道的位置。由启动时间，磁头跨越磁道需要的时间（包括定位磁道的时间）两部分组成。Ts;</li>
+<li>旋转延迟：为了让磁头定位到特定的扇区，磁盘需要旋转。Tr = 1 / r， r为角速度。<br>上面两个之和称为存取时间。还有一个传送时间：磁头一旦完成定位，就可以正式开始读写数据。Tt = b / rN；b为传送的比特数。N为磁道上的比特数。</li>
+</ol>
+<h3 id="两种访问方式"><a href="#两种访问方式" class="headerlink" title="两种访问方式"></a>两种访问方式</h3><p>假设：<br>一个磁道500个扇区；<br>平均寻道时间为：4ms;<br>旋转延迟：4ms；<br>读取500个扇区:4ms;</p>
+<p>我们现在要读取的数据量为2500扇区：</p>
+<ol>
+<li>连续访问：访问的数据在相邻的五个磁道上，因为磁道之间相邻，不考虑寻道时间，这时访问的时间为：4ms + 5 * (4ms + 8ms) = 64ms;</li>
+<li>随机访问：访问的数据分散在不同的磁道上的2500扇区上：2500 * (4ms + 4ms + 0.016ms) = 20.04s</li>
+</ol>
+<p>可以看到，随机访问需要的时间远远多于连续紧凑的访问。磁盘对扇区的访问顺序对IO的性能有很大的影响。我们可以看到性能的主要差异来源于寻道时间。为了提高性能，需要减少寻道时间。在一般的操作系统中，维护着一个IO的请求队列，如果我们按顺序选择IO请求进行处理，那么磁道的访问就是随机的。所有需要调度策略以减少寻道时间，并满足不同系统的要求。下面简单讲述</p>
+<h3 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h3><ol>
+<li>后进先出 (LIFO)：优先处理新产生的IO请求。一般来说，同一个进程访问的数据都是连续的。当一个进程积极地进行IO请求，IO设备会优先处理这些IO请求。在这样的情况下，磁头的移动将会变少。另一个好处是，这种策略有利于提高系统的响应速度，新来的IO请求总是优先被处理。飞机的控制系统可能用得到。不过这可能导致<b>饥饿</b>，如果IO请求不断出现，先进入的请求可能永远得得不到处理。</li>
+<li>最短服务时间优先（SSTF）：选择让磁头从当前位置移动最少的请求。它可以保证每次拥有最短的寻道时间，但不能保证平均时间最短。它同样可能会产生饥饿，如果最新的IO请求访问的磁道离当前磁道都很近，那么离当前磁道远的IO请求就得不到处理。</li>
+<li>扫描策略 （SCAN）：磁头臂只往一个方向移动，移动的过程当中，处理所有未完成的IO请求。当访问方向上没有IO请求了，就回到原位重新开始。做电梯。</li>
+</ol>
+<p>上面的策略对局部性原理的利用程度不同，大家可以想一想。</p>
+<h2 id="多磁盘"><a href="#多磁盘" class="headerlink" title="多磁盘"></a>多磁盘</h2><p>大数据时代，数据就是多。上半年生成黑洞照片的数据都是用飞机装的。现在免不了需要储存大量的数据。为了提高系统的储存量，我们有两个选择：</p>
+<ol>
+<li>使用大数据磁盘。</li>
+<li>使用多个磁盘，<b>并行</b>地提供数据。<br>第一种方法，成本十分高，飞机这么大的磁盘造起来应该很贵。实践证明，大磁盘不仅造价高，而且性能上比不过多个磁盘组成的磁盘列阵。现在的多磁盘数据库已经非常成熟了。我们下面来看看一个成熟的解决方案：<h3 id="RAID"><a href="#RAID" class="headerlink" title="RAID"></a>RAID</h3>独立磁盘冗余列阵（Redundant Array of Independent Disks），它包括7个等级，也就是7个类型。不论哪个等级，对应操作系统，他们可以都看成在逻辑上单独的驱动器。<h4 id="0"><a href="#0" class="headerlink" title="0"></a>0</h4>先来看看他们的结构：</li>
+</ol>
+<p>地址的顺序是从一到十二，也就是一条带和二条带的逻辑地址是连续的。为什么要设计成这样呢？为什么不设计成1和4是连续的？先来看看局部性原理的定义：</p>
+<h5 id="局部性原理"><a href="#局部性原理" class="headerlink" title="局部性原理"></a>局部性原理</h5><p><b>局部性原理是指CPU访问存储器时，无论是存取指令还是存取数据，所访问的存储单元都趋于聚集在一个较小的连续区域中。</b></p>
+<p>我们知道，程序的代码（指令）是储存在内存中。在贪吃蛇运行的过程当中，大多数时间都在执行运动的while循环，这意味着cpu访问的区域都集中在这个while循环的代码中。用到局部性原理的地方有很多。比如：将磁盘数据暂时放到内存中磁盘高速缓存，cpu和内存间的高速缓存，虚拟内存，网络上的web缓存服务器等等。</p>
+<p>我们之前提到，多磁盘可以同时地提供数据。如果将逻辑上连续的数据分布在不同磁盘上，当某个应用程序访问连续的数据时，我们就能很好地利用多磁盘的并行能力，同时提供数据。一个条带的大小影响并发能力，可以想想。</p>
+<h4 id="1"><a href="#1" class="headerlink" title="1"></a>1</h4><p>由于数据可能会出现损坏，这个等级提供了恢复数据方法。提高冗余性（重复的数据，或者说是对程序无用的数据），来保证数据的正确性。在等级一的基础上，每个数据储存在两个不同的磁盘上。其中一个出现问题，直接从另一个磁盘获取。这个方法成本高，要多于需储存数据两倍的空间。对于写操作来说：需要同时对两个镜像磁盘都进行更新，速度取决于最慢的。对于读操作：可以在两个镜像磁盘中同时取不同的数据，性能是 0 级的两倍。</p>
+<h4 id="2"><a href="#2" class="headerlink" title="2"></a>2</h4><p>不同于等级一，数据的正确性并不是使用镜像磁盘来保证的。而是使用汉明码来实现的。下面简单地讲解一下汉明码。</p>
+<ol>
+<li>首先在每个比特进行排序，取2^n位置作为汉明码的检测位。</li>
+<li>对检测位进行赋值：将检测位的位置转成二进制可以发现，第n+1位上为一其他位为零。我们现在找xxx1(n+1)xxx对应位上的比特，如果他们的1的个数是奇数，检测位为1，如果1的个数是偶数，检测位为0；</li>
+<li>2歩操作之后，每个检测位和对应的比特(我们将之划分成一个分组)共同的1的个数都是偶数（偶效验）。<br>在上面这些操作完成后，汉明码就被创建了。考虑只有一个位错误的情况。当获取一段数据之后，为每个分组设置一个校正位。检验数据中每个分组的中1的个数，如果为偶数，对应的校正位设为0， 奇数为1。将校正位按照顺序组成一个进制数字。这个数字便是错误比特的位置。</li>
+</ol>
+<h1 id="汉明码的解释"><a href="#汉明码的解释" class="headerlink" title="汉明码的解释"></a>汉明码的解释</h1><img src="/2019/10/22/disk/1.png" width="300" height="60">
+
+<p>假设现在有111(二进制)个数据，取001，010，100，位作为检测位。先来划分组别：</p>
+<ol>
+<li>001位检测位对应的组别是 xx1: 111,101,011,010（检测位）。</li>
+<li>010对应的是 X1X:111,110,011，010（检测位）。</li>
+<li>100对应的是 1xx:111，101,110,100（检测位）。</li>
+</ol>
+<p>看这个图片：</p>
+<img src="/2019/10/22/disk/2.jpg" width="300" height="60">
+
+<p>其中每个检测位用蓝色表示。为了保证每个分组中，1的个数是偶数，需要对空的的检测位进行赋值。分组中除检测位外，如果一的个数是偶数，检测位取0；是奇数取1。<br>比如：001位对应的分组是：111,101,011,010。去除检测位后:111,101,011。换成十进制：7,5,3。这三个位置上1的个数是奇数，所有001位取1。结果如下图。</p>
+<p>当我们拿到这一整串汉明码，该如何进行错误检验和纠正呢？因为汉明码每个分组中1的个数都是偶数，如果不是这意味着该分组中有个比特是错误的。操作如下：<br>假设上面的汉明码第5位被修改成1。上面一共有3个分组，我们创建3个比特（p1,p2,p3），记录分组的正确性。</p>
+<img src="/2019/10/22/disk/3.jpg" width="300" height="60">
+
+<ol>
+<li>找到第一个分组，分组中存在错误（即1的个数不是偶数），取P1 = 1。</li>
+<li>第二个分组，不存在错误，取p2 = 0;</li>
+<li>第三个分组，存在错误，取p3 = 1;</li>
+</ol>
+<p>由p1p2p3组成的二进制数字为：101。这表明错误的比特位置为101，即第5位。</p>
+<p>实际上这个过程是：不断确定错误位置二进制表现下的各个位数。比如说第一个分组错误，表明错误的位在xx1中。那么我们就确定了错误位置第一个位是1，而不是0。第二位是通过第二个组确定的….等等。</p>
+<h3 id="3"><a href="#3" class="headerlink" title="3"></a>3</h3><p>采用奇数校验位来检测数据的正确性，使用一个磁盘来存放奇偶校验数：x4；<br>如下图：</p>
+<p>x4 = x3 &amp; x2 &amp; x1。x3,x2,x1在其他存放数据磁盘上；<br>每一次操作，等级2,3都需要同时访问所有的磁盘，来保证数据的正确性。由于局部性原理，这不一定意味着磁盘列阵的并行能力使用不当。取连续的数据时，并不一定需要访问额外的磁盘。所有一般2,3级别的条带都很小。一个字或者一个字节。</p>
+<h3 id="4"><a href="#4" class="headerlink" title="4"></a>4</h3><p>和等级3不一样的是，采取独立的访问技术，每个磁盘可以独立出来IO请求。数据正确性的保障上和等级三一样。对于写过程，实际上只需要</p>
+<h3 id="5"><a href="#5" class="headerlink" title="5"></a>5</h3><p>和等级4一样，不同的是将奇偶校验条带放在不同的磁盘中。</p>
+<h3 id="6"><a href="#6" class="headerlink" title="6"></a>6</h3><p>相比于等级5，多加了一个校验方法。</p>
+
+
+                
+            </div>
+
+            <!-- Comments -->
+            
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    
+
+
+                </div>
+            
+        </div>
+    </div>
+</article>
+
+    <!-- Footer -->
+    <hr />
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+
+                    
+
+                    
+                        <li>
+                            <a href="https://github.com/klugjo/hexo-theme-clean-blog" target="_blank">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    
+
+                    
+
+                    
+
+                    
+                </ul>
+                <p class="copyright text-muted">&copy; 2019 John Doe<br></p>
+                <p class="copyright text-muted">Original Theme <a target="_blank" href="http://startbootstrap.com/template-overviews/clean-blog/">Clean Blog</a> from <a href="http://startbootstrap.com/" target="_blank">Start Bootstrap</a></p>
+                <p class="copyright text-muted">Adapted for <a target="_blank" href="https://hexo.io/">Hexo</a> by <a href="http://www.codeblocq.com/" target="_blank">Jonathan Klughertz</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- After footer scripts -->
+    
+<!-- jQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<!-- Gallery -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Disqus Comments -->
+
+
+
+</body>
+
+</html>
